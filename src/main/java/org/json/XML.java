@@ -4,11 +4,14 @@ package org.json;
 Public Domain.
 */
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.json.NumberConversionUtil.potentialNumber;
@@ -1171,6 +1174,7 @@ public class XML {
             replaceIndex = Integer.parseInt(pathList[pathList.length - 2]);
         }
 
+
         try {
             while (x.more()) {
                 x.skipPast("<");
@@ -1184,14 +1188,33 @@ public class XML {
             throw new JSONException("Invalid JSONPointer: " + path.toString());
         }
 
-        if (!hasReplaced) {
-            throw new JSONException("Path not found: " + path.toString());
-        }
+
+        //if (!hasReplaced) {
+        //throw new JSONException("Path not found: " + path.toString());
+        //}
 
         resetGlobalValues();
 
+        // Additional logic to check if the path returns a JSONObject and execute accordingly
+
+        if (!tagChanged) {
+            Object queryResult = jo.query(path);
+            if (queryResult instanceof JSONObject) {
+                return jo;
+            } else if (queryResult != null) {
+                try {
+                    return jo;
+                } catch (JSONException e) {
+                    throw new JSONException("Unable to convert the query result to JSONObject: " + e.getMessage());
+                }
+            } else {
+                throw new JSONException("The JSONPointer path resolved to a null value, which cannot be converted to a JSONObject.");
+            }
+        }
         return jo;
     }
+
+    static boolean tagChanged = false;
 
     private static boolean parse2Replace(XMLTokener x, JSONObject context, String name, XMLParserConfiguration config, String replaceKey, JSONObject replacement)
             throws JSONException {
@@ -1213,10 +1236,21 @@ public class XML {
         // <=
         // <<
 
+
+
         // If path has been found and also reached the index, then replace
         if (replacePathFind && !hasReplaced) {
-            context.remove(replaceKey);
-            context.put(replaceKey, replacement.get(replaceKey));
+            if(replacement.has(replaceKey)) {
+                context.remove(replaceKey);
+                context.put(replaceKey, replacement.get(replaceKey));
+            } else {
+                for (Iterator<String> it = replacement.keys(); it.hasNext(); ) {
+                    String replacementKey = it.next();
+                    context.remove(replaceKey);
+                    context.put(replacementKey, replacement.get(replacementKey));
+                    tagChanged = true;
+                }
+            }
             hasReplaced = true;
         }
 
@@ -1406,5 +1440,17 @@ public class XML {
         hasReplaced = false;
         replacePathFind = false;
         replaceIndex = -1;
+    }
+
+    private static String readerToString(Reader reader) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = new BufferedReader(reader);
+
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line + "\n"); // Append line and a newline character
+        }
+
+        return stringBuilder.toString();
     }
 }
