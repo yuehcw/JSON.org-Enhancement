@@ -148,7 +148,7 @@ It helps identify the specific XML element specified by the JSONPointer and perf
 It's my understanding that to replace the method effectively, it's required to process the entire XML file in order to acquire the complete JSONObject.
 
 
-<h1>Unit Test</h1>
+<h1>Testing</h1>
 
 * Run the test file `M2Test` to see their functionalities
 Change the directory to `/src/test` compile the java file and execute
@@ -179,12 +179,152 @@ After Replacement:
 {"contact":{"nick":"Crista","address":{"zipcode":92614,"street":"Ave of the Arts"},"name":"Crista Lopes"}}
 ```
 
-* Testing error conditions for both functions
-   
-Inside the `M2Test.java` file change the JSONPointer parameters to `/contact/address/none` for one of each to inspect for the error condition
+<h2>Junit Test</H2>
 
-<img width="880" alt="Screenshot 2024-01-30 012555" src="https://github.com/yuehcw/MSWE-262P/assets/152671651/1543e18e-85a7-4fc6-a72e-8da07a658294">
+* I create the `XML2Test.java` testing file under the test dir, you can run `mvn clean test -Dtest=XML2Test` in the root dir to perform tests
 
-I also test the result of setting the replace tag not equal to the original tag for testing `static JSONObject toJSONObject(Reader reader, JSONPointer path, JSONObject replacement)` function
+* Inside the testing file, `toJSONObject1Test1()` is testing the basic functionality. 
 
-<img width="667" alt="Screenshot 2024-01-30 014133" src="https://github.com/yuehcw/MSWE-262P/assets/152671651/39a0b990-3b7c-4fb2-9ba0-66826db2d015">
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/address");
+JSONObject jo = toJSONObject(reader, path);
+            ......
+```
+* `toJSONObject1Test2()` is testing another xmlString.
+
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <person>\n" +
+                "    <nick>Crista</nick>\n" +
+                "    <name>Crista Lopes</name>\n" +
+                "    <address>\n" +
+                "      <location>\n" +
+                "        <street>Ave of Nowhere</street>\n" +
+                "        <zipcode>92614</zipcode>\n" +
+                "      </location>\n" +
+                "    </address>\n" +
+                "  </person>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/person/address");
+JSONObject jo = toJSONObject(reader, path);
+            ......
+```
+* `toJSONObject1Test3()` is testing for wrong JSONPointer (Error)
+
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/street");
+JSONObject jo = toJSONObject(reader, path);
+            ......
+```
+* `toJSONObject2Test1()` is testing the basic functionality.
+```ruby
+            ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/address/street");
+JSONObject replacement = toJSONObject("<street>Ave of the Arts</street>\n");
+JSONObject jo = toJSONObject(reader, path, replacement);
+             ......
+```
+* `toJSONObject2Test2()` is testing to replace the `tag`.
+```ruby
+              ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/address/street");
+JSONObject replacement = toJSONObject("<avenue>Ave of the Arts</avenue>\n");
+JSONObject jo = toJSONObject(reader, path, replacement);
+            ......
+```
+* `toJSONObject2Test3()` is testing another xmlString.
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <person>\n" +
+                "    <nick>Crista</nick>\n" +
+                "    <name>Crista Lopes</name>\n" +
+                "    <address>\n" +
+                "      <location>\n" +
+                "        <street>Ave of Nowhere</street>\n" +
+                "        <zipcode>92614</zipcode>\n" +
+                "      </location>\n" +
+                "    </address>\n" +
+                "  </person>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/person/nick");
+JSONObject replacement = toJSONObject("<nick>Professor</nick>\n");
+JSONObject jo = toJSONObject(reader, path, replacement);
+             ......
+```
+* `toJSONObject2Test4()` is testing a mismatched tag name. (Error)
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+Reader reader = new StringReader(xmlString);
+JSONPointer path = new JSONPointer("/contact/address/street");
+JSONObject replacement = toJSONObject("<tag>Ave of the Arts</street>\n");
+JSONObject jo = toJSONObject(reader, path, replacement);
+             ......
+```
+* When you run `mvn clean test -Dtest=XML2Test` in the root dir, you should see `Tests run: 7, Failures: 0 Errors: 2, Skipped: 0`
+<img width="877" alt="Screenshot 2024-02-02 224133" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/3df63a7a-fe61-49c8-bb3d-b1a5addb6230">
+
+
