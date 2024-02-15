@@ -328,4 +328,121 @@ JSONObject jo = toJSONObject(reader, path, replacement);
 
 <img width="683" alt="Screenshot 2024-02-02 231642" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/3e9cbd94-54d1-4577-9baa-eb715ebdcb83">
 
+<h1>MileStone3</h1>
 
+* Add an overloaded static method to the XML class with the signature
+
+```ruby
+public static JSONObject toJSONObject(Reader reader, Function<String, String> keyTransformer) {
+        JSONObject jsonObject = new JSONObject();
+        XMLTokener tokener = new XMLTokener(reader);
+        if (keyTransformer == null) {
+            return null;
+        }
+        while (tokener.more()) {
+            tokener.skipPast("<");
+            if (tokener.more()) {
+                parse3(tokener, jsonObject, null, XMLParserConfiguration.ORIGINAL, keyTransformer);
+            }
+        }
+        return jsonObject;
+    }
+```
+which does, inside the library, the kinds of things you did in task 4 of milestone 1, but in a much more general manner, for any transformations of keys. Specifically, YOURTYPEHERE should be a function (or "functional" in Java) that takes as input a String  denoting a key and returns another String that is the transformation of the key. For example:
+
+```
+"foo" --> "swe262_foo" 
+"foo" --> "oof"
+```
+<h2>I implement 'parse3' function with the integration of the keyTransformer function.</h2>
+
+```` ruby
+private static boolean parse3(XMLTokener x, JSONObject context, String name, XMLParserConfiguration config,  Function keyTransformer) {
+        ......
+        if (x.next() == '[') {
+                        string = x.nextCDATA();
+                        if (string.length() > 0) {
+                            context.accumulate((String) keyTransformer.apply(config.getcDataTagName()), string);
+                        }
+                        return false;
+                    }
+
+        token = x.nextToken();
+        ......
+}
+````
+Integrating the `keyTransformer` ensures that the `keyTransformer` is invoked each time the `parse3` function attempts to utilize the `accumulate` method for enlarging the result. 
+Every occurrence of a Tag or TagName transforms the keyTransformer function, ensuring uniform application throughout the parsing process.
+
+<h2>Junit Test</h2>
+
+* I created three more test cases inside the `XML2Test.java` testing file under the test dir, you can run `mvn clean test -Dtest=XML2Test` in the root dir to perform tests
+
+* `toJSONObject3Test1()` is testing the basic functionality of `toJSONObject(Reader reader, Function<String, String> keyTransformer)`, adding prefix `swe262P_` to every key
+  
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+  StringReader reader = new StringReader(xmlString);
+  Function<String, String> func = x -> "swe262P_" + x;
+  JSONObject jsonObject = toJSONObject(reader, func);
+  System.out.println(jsonObject.toString(2));
+            ......
+```
+
+* `toJSONObject3Test2()` is testing another xmlString, and add sufix `_swe262p` to every key.
+
+```ruby
+             ......
+String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <person>\n" +
+                "    <nick>Crista</nick>\n" +
+                "    <name>Crista Lopes</name>\n" +
+                "    <address>\n" +
+                "      <location>\n" +
+                "        <street>Ave of Nowhere</street>\n" +
+                "        <zipcode>92614</zipcode>\n" +
+                "      </location>\n" +
+                "    </address>\n" +
+                "  </person>\n" +
+                "</contact>";
+
+  StringReader reader = new StringReader(xmlString);
+  Function<String, String> func = x -> x + "_swe262P";
+  JSONObject jsonObject = toJSONObject(reader, func);
+  System.out.println(jsonObject.toString(2));
+            ......
+```
+* `toJSONObject3Test3()` is testing to read an XML file and converting every key to upper case.
+
+```ruby
+             ......
+File file = new File("./src/Sample1.xml");
+        FileReader fr = new FileReader(file);
+        BufferedReader br = new BufferedReader(fr);
+
+        Function<String, String> func = String::toUpperCase;
+
+        JSONObject jobj = toJSONObject(br,func);
+        System.out.println(jobj.toString(2));
+            ......
+```
+* When you run `mvn clean test -Dtest=XML2Test` in the root dir, you can check each test case's printed result.
+<img width="466" alt="Screenshot 2024-02-14 174445" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/92511a48-9868-4f19-adf1-89da2b7ae19d">
+
+<h1>Performance</h1>
+In MileStone1, The codes first had to read through the XML to turn it into JSON. Then, the client had to go through it again to change the keys.
+In MileStone3, by using Functions and lambda expressions, I managed to do the job with just one pass through the XML, which made everything faster. Modifying the 
+accumulate function by calling keyTransformer function when parse3 function wants to extend the result 
+<p>&nbsp;</p>
+Overall, the keyTransformer facilitates flexibility in how the resulting JSON object is structured by enabling dynamic modification of tag names during the parsing process.
