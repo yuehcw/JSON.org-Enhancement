@@ -4,8 +4,8 @@ import org.json.XML;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -192,4 +192,61 @@ public class XML2Test {
 
         assertEquals(expected2.toString(), jo.toString());
     }
+
+    @Test
+    public void toJSONObject3Test1() {
+        String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <nick>Crista </nick>\n" +
+                "  <name>Crista Lopes</name>\n" +
+                "  <address>\n" +
+                "    <street>Ave of Nowhere</street>\n" +
+                "    <zipcode>92614</zipcode>\n" +
+                "  </address>\n" +
+                "</contact>";
+
+        StringReader reader = new StringReader(xmlString);
+
+        Function<String, String> func = x -> "swe262P_" + x;
+
+        JSONObject jsonObject = toJSONObject(reader, func);
+        System.out.println(jsonObject.toString(2));
+    }
+
+    @Test
+    public void toJSONObject3Test2() {
+        String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<contact>\n" +
+                "  <person>\n" +
+                "    <nick>Crista</nick>\n" +
+                "    <name>Crista Lopes</name>\n" +
+                "    <address>\n" +
+                "      <location>\n" +
+                "        <street>Ave of Nowhere</street>\n" +
+                "        <zipcode>92614</zipcode>\n" +
+                "      </location>\n" +
+                "    </address>\n" +
+                "  </person>\n" +
+                "</contact>";
+
+        StringReader reader = new StringReader(xmlString);
+
+        Function<String, String> func = x -> x + "_swe262P";
+
+        JSONObject jsonObject = toJSONObject(reader, func);
+        System.out.println(jsonObject.toString(2));
+    }
+
+    @Test
+    public void toJSONObject3Test3() throws FileNotFoundException {
+        File file = new File("./src/Sample1.xml");
+        FileReader fr = new FileReader(file);
+        BufferedReader br = new BufferedReader(fr);
+
+        Function<String, String> func = String::toUpperCase;
+
+        JSONObject jobj = toJSONObject(br,func);
+        System.out.println(jobj.toString(2));
+    }
+
 }
