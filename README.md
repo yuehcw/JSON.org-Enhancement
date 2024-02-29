@@ -446,3 +446,81 @@ In MileStone3, by using Functions and lambda expressions, I managed to do the jo
 accumulate function by calling keyTransformer function when parse3 function wants to extend the result 
 <p>&nbsp;</p>
 Overall, the keyTransformer facilitates flexibility in how the resulting JSON object is structured by enabling dynamic modification of tag names during the parsing process.
+
+<h1>MileStone4</h1>
+
+* Add streaming methods to the library that allow the client code to chain operations on JSON nodes. For example:
+
+```
+// in client space
+JSONObject obj = XML.toJSONObject("<Books><book><title>AAA</title><author>ASmith</author></book><book><title>BBB</title><author>BSmith</author></book></Books>");
+obj.toStream().forEach(node -> do some transformation, possibly based on the path of the node);
+List<String> titles = obj.toStream().map(node -> extract value for key "title").collect(Collectors.toList());
+obj.toStream().filter(node -> node with certain properties).forEach(node -> do some transformation);
+```
+* I create a new class called `JSONNode` for implementing the new `toStream` method in the `JSONObject.java` file.
+
+```ruby
+public class JSONNode {
+    private String path;
+    private String key;
+    private Object value;
+
+    public JSONNode(String path, String key, Object value) {
+        this.path = path;
+        this.key = key;
+        this.value = value;
+    }
+    ......
+```
+* For implementing the `toStream` method, I write a method called `addNodes` as the helper method.
+
+```ruby
+public Stream<JSONNode> toStream() {
+        List<JSONNode> nodes = new ArrayList<>();
+        addNodes("/", this, nodes, "");
+        return nodes.stream();
+    }
+
+    private void addNodes(String path, Object json, List<JSONNode> nodes, String lastKey) {
+        if (json instanceof JSONObject) {
+            JSONObject jsonObj = (JSONObject) json;
+            for (String key : jsonObj.keySet()) {
+                Object value = jsonObj.get(key);
+                String newPath = path + key;
+                JSONNode node = new JSONNode(newPath, key, value);
+                nodes.add(node);
+                if (value instanceof JSONObject || value instanceof JSONArray) {
+                    addNodes(newPath + "/", value, nodes, key);
+                }
+            }
+        } else if (json instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray) json;
+            for (int i = 0; i < jsonArray.length(); i++) {
+                Object value = jsonArray.get(i);
+                String newPath = path + i;
+                JSONNode node = new JSONNode(newPath, lastKey.isEmpty() ? String.valueOf(i) : lastKey, value);
+                nodes.add(node);
+                if (value instanceof JSONObject || value instanceof JSONArray) {
+                    addNodes(newPath + "/", value, nodes, lastKey);
+                }
+            }
+        }
+    }
+```
+The `addNodes` function effectively explores the entire JSON structure, creating a JSONNode for each key-value pair encountered, and populates the nodes list. Then, the `toStream` function simply returns a stream of JSONNode objects created from the populated list.
+
+<h2>Junit Test</h2>
+
+* I created a new test file called `MileStone4Test` for testing `toStream` method's functionalities.
+
+```
+obj.toStream().forEach(node -> do some transformation, possibly based on the path of the node);
+List<String> titles = obj.toStream().map(node -> extract value for key "title").collect(Collectors.toList());
+obj.toStream().filter(node -> node with certain properties).forEach(node -> do some transformation);
+```
+
+* When you run `mvn -Dtest=MileStone4Test test` in the root dir, you can check each test case's printed result.
+
+<img width="810" alt="截圖 2024-02-28 下午5 55 07" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/cb3f7965-19a8-4199-a697-d7928a548a7b">
+
