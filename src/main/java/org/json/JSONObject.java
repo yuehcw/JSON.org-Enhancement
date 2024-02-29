@@ -4,6 +4,8 @@ package org.json;
 Public Domain.
 */
 
+import org.w3c.dom.Node;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -15,18 +17,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.json.NumberConversionUtil.potentialNumber;
 import static org.json.NumberConversionUtil.stringToNumber;
@@ -2884,5 +2880,35 @@ public class JSONObject {
         );
     }
 
+    public Stream<JSONNode> toStream() {
+        List<JSONNode> nodes = new ArrayList<>();
+        addNodes("/", this, nodes, "");
+        return nodes.stream();
+    }
 
+    private void addNodes(String path, Object json, List<JSONNode> nodes, String lastKey) {
+        if (json instanceof JSONObject) {
+            JSONObject jsonObj = (JSONObject) json;
+            for (String key : jsonObj.keySet()) {
+                Object value = jsonObj.get(key);
+                String newPath = path + key;
+                JSONNode node = new JSONNode(newPath, key, value);
+                nodes.add(node);
+                if (value instanceof JSONObject || value instanceof JSONArray) {
+                    addNodes(newPath + "/", value, nodes, key);
+                }
+            }
+        } else if (json instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray) json;
+            for (int i = 0; i < jsonArray.length(); i++) {
+                Object value = jsonArray.get(i);
+                String newPath = path + i;
+                JSONNode node = new JSONNode(newPath, lastKey.isEmpty() ? String.valueOf(i) : lastKey, value);
+                nodes.add(node);
+                if (value instanceof JSONObject || value instanceof JSONArray) {
+                    addNodes(newPath + "/", value, nodes, lastKey);
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 import org.json.JSONObject;
 import org.json.JSONPointer;
-import org.json.XML;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -8,13 +7,6 @@ import java.io.*;
 import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-
-import static com.sun.org.apache.xml.internal.serializer.Method.XML;
 import static org.json.XML.toJSONObject;
 
 public class XML2Test {
