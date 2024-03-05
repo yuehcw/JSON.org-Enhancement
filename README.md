@@ -1,4 +1,4 @@
-<h1>MileStone2</h1>
+<h1>MileStone1</h1>
 
 <h2>Task description</h2>
 
@@ -55,7 +55,7 @@ public static JSONObject toJSONObject(Reader reader, JSONPointer path) throws JS
     }
 ```
 
-which does, inside the library, the same thing that task 2 of milestone 1 did in client code, before writing to disk. Being this done inside the library, you should be able to do it more efficiently. Specifically, you shouldn't need to read the entire XML file, as you can stop parsing it as soon as you find the object in question.
+It reads an XML file into a JSON object and efficiently extracts smaller sub-objects using a specific path. This process, conducted internally, enhances efficiency by halting parsing the moment the desired object is located, eliminating the need to read the entire XML file.
 
 <h2>I implement 'parse2' fucntion as helper method to build the toJSONObject function </h2>
 
@@ -86,7 +86,7 @@ private static boolean parse2(XMLTokener x, JSONObject context, String name, XML
 
 The function achieves the requirement of stopping the XML parsing as soon as the target object is found by using a combination of the stopKey, reachIndex, and the pathFind flag within a controlled parsing loop. The parse2 function, with its checks and early return, is key to this functionality, allowing the parser to exit as soon as the target is located, thus avoiding the need to read the entire XML file.
 
-* Add an overloaded static method to the XML class with the signature
+* Add an overloaded static method to the XML class with the signature.
 
 ``` ruby
 private static final Pattern NUMERIC_PATTERN = Pattern.compile("^[0-9]");
@@ -125,7 +125,7 @@ private static final Pattern NUMERIC_PATTERN = Pattern.compile("^[0-9]");
     }
 ```
 
-which does, inside the library, the same thing that task 5 of milestone 1 did in client code, before writing to disk. Are there any possible performance gains from doing this inside the library? If so, implement them in your version of the library.  
+It reads an XML file into a JSONObject and replaces a sub-object on a certain key path with another JSON object that you construct.
 
 <h2>I implement 'parse2Replace' function to  process and parse the XML data.</h2>
 
@@ -151,7 +151,7 @@ It's my understanding that to replace the method effectively, it's required to p
 <h1>Testing</h1>
 
 * Run the test file `M2Test` to see their functionalities
-Change the directory to `/src/test` compile the java file and execute
+Change the directory to `/src/test` compile the Java file and execute.
 ```
 javac -cp ../main/java/json-java.jar M2Test.java
 java -cp ".;../main/java/json-java.jar" M2Test
@@ -181,7 +181,7 @@ After Replacement:
 
 <h2>Junit Test</H2>
 
-* I create the `XML2Test.java` testing file under the test dir, you can run `mvn clean test -Dtest=XML2Test` in the root dir to perform tests
+* I created the `XML2Test.java` testing file under the test dir, you can run `mvn clean test -Dtest=XML2Test` in the root dir to perform tests.
 
 * Inside the testing file, `toJSONObject1Test1()` is testing the basic functionality. 
 
@@ -225,7 +225,7 @@ JSONPointer path = new JSONPointer("/contact/person/address");
 JSONObject jo = toJSONObject(reader, path);
             ......
 ```
-* `toJSONObject1Test3()` is testing for wrong JSONPointer (Error)
+* `toJSONObject1Test3()` is testing for the wrong JSONPointer (Error).
 
 ```ruby
              ......
@@ -328,7 +328,7 @@ JSONObject jo = toJSONObject(reader, path, replacement);
 
 <img width="683" alt="Screenshot 2024-02-02 231642" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/3e9cbd94-54d1-4577-9baa-eb715ebdcb83">
 
-<h1>MileStone3</h1>
+<h1>MileStone2</h1>
 
 * Add an overloaded static method to the XML class with the signature
 
@@ -348,7 +348,7 @@ public static JSONObject toJSONObject(Reader reader, Function<String, String> ke
         return jsonObject;
     }
 ```
-which does, inside the library, the kinds of things you did in task 4 of milestone 1, but in a much more general manner, for any transformations of keys. Specifically, YOURTYPEHERE should be a function (or "functional" in Java) that takes as input a String  denoting a key and returns another String that is the transformation of the key. For example:
+It reads an XML file into a JSON object and adds the prefix "swe262_" to all of its keys, but in a much more general manner, for any transformations of keys. For example:
 
 ```
 "foo" --> "swe262_foo" 
@@ -441,15 +441,15 @@ File file = new File("./src/Sample1.xml");
 <img width="466" alt="Screenshot 2024-02-14 174445" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/92511a48-9868-4f19-adf1-89da2b7ae19d">
 
 <h1>Performance</h1>
-In MileStone1, The codes first had to read through the XML to turn it into JSON. Then, the client had to go through it again to change the keys.
-In MileStone3, by using Functions and lambda expressions, I managed to do the job with just one pass through the XML, which made everything faster. Modifying the 
-accumulate function by calling keyTransformer function when parse3 function wants to extend the result 
+Before, the codes first had to read through the XML to turn it into JSON. Then, the client had to go through it again to change the keys.
+Now, by using Functions and lambda expressions, I managed to do the job with just one pass through the XML, which made everything faster. Modifying the 
+accumulate function by calling the keyTransformer function when the parse3 function wants to extend the result 
 <p>&nbsp;</p>
 Overall, the keyTransformer facilitates flexibility in how the resulting JSON object is structured by enabling dynamic modification of tag names during the parsing process.
 
-<h1>MileStone4</h1>
+<h1>MileStone3</h1>
 
-* Add streaming methods to the library that allow the client code to chain operations on JSON nodes. For example:
+* Add streaming methods to the library that allows the client code to chain operations on JSON nodes. For example:
 
 ```
 // in client space
@@ -458,7 +458,7 @@ obj.toStream().forEach(node -> do some transformation, possibly based on the pat
 List<String> titles = obj.toStream().map(node -> extract value for key "title").collect(Collectors.toList());
 obj.toStream().filter(node -> node with certain properties).forEach(node -> do some transformation);
 ```
-* I create a new class called `JSONNode` for implementing the new `toStream` method in the `JSONObject.java` file.
+* I created a new class called `JSONNode` for implementing the new `toStream` method in the `JSONObject.java` file.
 
 ```ruby
 public class JSONNode {
@@ -508,7 +508,7 @@ public Stream<JSONNode> toStream() {
         }
     }
 ```
-The `addNodes` function effectively explores the entire JSON structure, creating a JSONNode for each key-value pair encountered, and populates the nodes list. Then, the `toStream` function simply returns a stream of JSONNode objects created from the populated list.
+The `addNodes` function effectively explores the entire JSON structure, creating a JSONNode for each key-value pair encountered, and populating the nodes list. Then, the `toStream` function simply returns a stream of JSONNode objects created from the populated list.
 
 <h2>Junit Test</h2>
 
