@@ -512,7 +512,7 @@ The `addNodes` function effectively explores the entire JSON structure, creating
 
 <h2>Junit Test</h2>
 
-* I created a new test file called `MileStone4Test` for testing `toStream` method's functionalities.
+* I created a new test file called `MileStone3Test` for testing `toStream` method's functionalities.
 
 ```
 obj.toStream().forEach(node -> do some transformation, possibly based on the path of the node);
@@ -520,11 +520,11 @@ List<String> titles = obj.toStream().map(node -> extract value for key "title").
 obj.toStream().filter(node -> node with certain properties).forEach(node -> do some transformation);
 ```
 
-* When you run `mvn clean test -Dtest=MileStone4Test` in the root dir, you can check each test case's printed result.
+* When you run `mvn clean test -Dtest=MileStone3Test` in the root dir, you can check each test case's printed result.
 
 <img width="810" alt="截圖 2024-02-28 下午5 55 07" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/cb3f7965-19a8-4199-a697-d7928a548a7b">
 
-<h1>MileStone5</h1>
+<h1>MileStone4</h1>
 
 * Add asynchronous methods to the library that allow the client code to proceed, while specifying what to do when the JSONObject becomes available. This is useful for when reading very large files. For example:
 
@@ -566,7 +566,7 @@ The `toJSONObject` static function acts as an interface to this functionality, h
 
 <h2>Junit Test</h2>
 
-* I created a new test file called `MileStone5Test` for testing `toJSONObject` method's functionalities.
+* I created a new test file called `MileStone4Test` for testing `toJSONObject` method's functionalities.
 
 * Inside the testing file, `testTransformJSONObjectKeyAsyn` verify that the XML to JSON conversion correctly applies the key transformation function to all keys in the resulting JSON object.
 
@@ -615,4 +615,4 @@ public void testTransformJSONObjectKeyAsynExceptionHandler() {
     }
 ```
 
-* When you run `mvn clean test -Dtest=MileStone5Test` in the root dir, you can check each test case's printed result.
+* When you run `mvn clean test -Dtest=MileStone4Test` in the root dir, you can check each test case's printed result.
