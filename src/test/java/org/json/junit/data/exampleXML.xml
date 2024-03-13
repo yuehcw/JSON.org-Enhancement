@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<library>
+    <book>
+        <title>Programming Languages</title>
+        <author>Robert W. Sebesta</author>
+        <isbn>9780133943023</isbn>
+        <published>2016</published>
+    </book>
+    <book>
+        <title>Clean Code: A Handbook of Agile Software Craftsmanship</title>
+        <author>Robert C. Martin</author>
+        <isbn>9780132350884</isbn>
+        <published>2008</published>
+    </book>
+    <book>
+        <title>Design Patterns: Elements of Reusable Object-Oriented Software</title>
+        <author>Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides</author>
+        <isbn>9780201633610</isbn>
+        <published>1994</published>
+    </book>
+</library>

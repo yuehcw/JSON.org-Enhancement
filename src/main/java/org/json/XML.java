@@ -12,6 +12,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -1670,6 +1674,40 @@ public class XML {
                     throw x.syntaxError("Misshaped tag");
                 }
             }
+        }
+    }
+
+    public static Future<JSONObject> toJSONObject(Reader reader, Function<String, String> keyTransformer, Consumer<Exception> exceptionHandler) {
+        FutureJsonObject future;
+        Future<JSONObject> futureObject = null;
+        try {
+            if (keyTransformer == null)
+                throw new Exception();
+            future = new FutureJsonObject();
+            futureObject = future.toJSONObject(reader, keyTransformer);
+
+            // shutdown executor when future toJSONObject is done
+            if (futureObject.isDone())
+                future.stopFuture();
+        } catch (Exception e) {
+            exceptionHandler.accept(e);
+        }
+        System.out.println("here");
+        return futureObject;
+    }
+
+    private static class FutureJsonObject {
+        private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        public Future<JSONObject> toJSONObject(Reader reader, Function keyTransformer) throws Exception{
+            return executor.submit(() -> {
+                System.out.println("[FutureJsonObject]");
+                return XML.toJSONObject(reader, keyTransformer);
+            });
+        }
+
+        public void stopFuture() {
+            executor.shutdown();
         }
     }
 

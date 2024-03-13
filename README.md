@@ -520,7 +520,99 @@ List<String> titles = obj.toStream().map(node -> extract value for key "title").
 obj.toStream().filter(node -> node with certain properties).forEach(node -> do some transformation);
 ```
 
-* When you run `mvn -Dtest=MileStone4Test test` in the root dir, you can check each test case's printed result.
+* When you run `mvn clean test -Dtest=MileStone4Test` in the root dir, you can check each test case's printed result.
 
 <img width="810" alt="截圖 2024-02-28 下午5 55 07" src="https://github.com/yuehcw/MSWE-262P-MileStone/assets/152671651/cb3f7965-19a8-4199-a697-d7928a548a7b">
 
+<h1>MileStone5</h1>
+
+* Add asynchronous methods to the library that allow the client code to proceed, while specifying what to do when the JSONObject becomes available. This is useful for when reading very large files. For example:
+
+```
+XML.toJSONObject(aReader, (JSONObject jo) -> {jo.write(aWriter);}, (Exception e) -> {/* something went wrong */});
+```
+
+<h2> I created a private class inside the `XML.java` called `FutureJsonObject` for implementing the `toJSONObject` </h2>
+
+```ruby
+    public static Future<JSONObject> toJSONObject(Reader reader, Function<String, String> keyTransformer, Consumer<Exception> exceptionHandler) {
+            ......
+        try {
+            if (keyTransformer == null)
+                throw new Exception();
+            future = new FutureJsonObject();
+            futureObject = future.toJSONObject(reader, keyTransformer);
+
+            // shutdown executor when future toJSONObject is done
+            if (futureObject.isDone())
+            ......
+    }
+    
+    private static class FutureJsonObject {
+            ......
+
+        public Future<JSONObject> toJSONObject(Reader reader, Function keyTransformer) throws Exception{
+            return executor.submit(() -> {
+                System.out.println("[FutureJsonObject]");
+                return XML.toJSONObject(reader, keyTransformer);
+            });
+        }
+
+            ......
+    }
+```
+The `FutureJsonObject` class encapsulates the details of performing an asynchronous operation for converting XML to JSON with key transformation and resource management.
+The `toJSONObject` static function acts as an interface to this functionality, handling initial checks, exception handling, and ensuring proper cleanup after the operation.
+
+<h2>Junit Test</h2>
+
+* I created a new test file called `MileStone5Test` for testing `toJSONObject` method's functionalities.
+
+* Inside the testing file, `testTransformJSONObjectKeyAsyn` verify that the XML to JSON conversion correctly applies the key transformation function to all keys in the resulting JSON object.
+
+```ruby
+public void testTransformJSONObjectKeyAsyn(){
+        try {
+            FileReader reader = new FileReader("src/test/java/org/json/junit/data/exampleXML.xml");
+            Function<String, String> keyTransformer = (key) -> "swe262_" + key;
+            Consumer<Exception> exceptionHandler = (e) -> e.printStackTrace();
+
+            Future<JSONObject> futureActual = XML.toJSONObject(reader, keyTransformer, exceptionHandler);
+            String expect = "{\n" +
+                    "  \"swe262_library\": {\n" +
+                    "    \"swe262_book\": [\n" +
+                   
+            ......
+```
+
+* `testTransformJSONObjectKeyAsynReturnType` confirm that the method returns a JSONObject as its result when the conversion and transformation are successful.
+
+```ruby
+public void testTransformJSONObjectKeyAsynReturnType() {
+        try {
+            FileReader reader = new FileReader("src/test/java/org/json/junit/data/exampleXML.xml");
+            Function<String, String> keyTransformer = (key) -> "swe262_" + key;
+            Consumer<Exception> exceptionHandler = (e) -> e.printStackTrace();
+
+            Future<JSONObject> futureActual = XML.toJSONObject(reader, keyTransformer, exceptionHandler);
+
+            ......
+```
+
+* `testTransformJSONObjectKeyAsynExceptionHandler` test the method's exception handling capability when provided with invalid inputs or conditions that trigger an exception.
+
+```ruby
+public void testTransformJSONObjectKeyAsynExceptionHandler() {
+        try {
+            FileReader reader = new FileReader("src/test/java/org/json/junit/data/exampleXML.xml");
+            Consumer<Exception> exceptionHandler = (e) -> System.out.println("OMG ERROR!!");
+
+            Future<JSONObject> futureActual = XML.toJSONObject(reader, null, exceptionHandler);
+            assertNull(futureActual);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+```
+
+* When you run `mvn clean test -Dtest=MileStone5Test` in the root dir, you can check each test case's printed result.
